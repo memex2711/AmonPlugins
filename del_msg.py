@@ -1,6 +1,6 @@
-__MODULE__ = "Delete"
+__MODULE__ = "Delmsg"
 __HELP__ = """
-<blockquote expandable>📋 <b>Delete Commands</b>
+<blockquote expandable>📋 <b>Delete Msg Commands</b>
 
 Delete all group messages using an assistant account, with owner‑only confirmation.
 
