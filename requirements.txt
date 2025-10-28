@@ -6,7 +6,6 @@ deepai
 edge-tts
 emojis
 emoji
-ffmpeg-python
 future
 gitpython
 google-api-python-client
