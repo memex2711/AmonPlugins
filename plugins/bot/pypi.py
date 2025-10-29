@@ -4,6 +4,22 @@ import requests
 from AmonMusic import app
 
 
+
+__MODULE__ = "PyPi"
+__HELP__ = """
+<blockquote expandable>📋 <b>PyPi Commands</b>
+
+• <b>/pypi</b> – Get package pypi info.
+
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
+
+</blockquote>
+"""        
+
+
+
+
+
 def get_pypi_info(package_name):
     try:
         api_url = f"https://pypi.org/pypi/{package_name}/json"
