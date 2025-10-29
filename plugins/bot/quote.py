@@ -405,5 +405,7 @@ __HELP__ = """
 
 <b>/qcolor</b> – Show all available quote colors.
 
+
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
 </blockquote>
 """        
