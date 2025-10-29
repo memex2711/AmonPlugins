@@ -9,7 +9,7 @@ __MODULE__ = "Bored"
 __HELP__ = """
 <blockquote expandable>📋 <b>Bored Commands</b>
 
-• <b>/bored </b> – Get feeling bored.
+• <b>/bored</b> – Get feeling bored.
 
 ✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
 
