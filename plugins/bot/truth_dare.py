@@ -54,5 +54,6 @@ __HELP__ = """
 • <b>/truth</b> – Answer challenge.
 • <b>/dare</b> – Answer challenge.
 
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
 </blockquote>
 """
