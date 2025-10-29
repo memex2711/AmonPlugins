@@ -150,3 +150,18 @@ async def list_bots(_: Client, message: Message):
         await app.send_message(message.chat.id, txt)
     except FloodWait as e:
         await asyncio.sleep(e.value)
+
+
+
+
+
+__MODULE__ = "Zombies"
+__HELP__ = """
+<blockquote expandable>📋 <b>Zombies Commands</b>
+
+• /zombies - Removes deleted accounts from the group.
+
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)</blockquote>
+
+</blockquote>
+"""        
