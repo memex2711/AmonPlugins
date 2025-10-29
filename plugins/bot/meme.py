@@ -3,6 +3,19 @@ import requests
 from AmonMusic import app
 
 
+__MODULE__ = "Meme"
+__HELP__ = """
+<blockquote expandable>📋 <b>Meme Commands</b>
+
+• <b>/meme</b> – Get a random meme.
+
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
+
+</blockquote>
+"""        
+
+
+
 @app.on_message(filters.command("meme"))
 async def meme_command(client, message):
     args = message.text.split()
