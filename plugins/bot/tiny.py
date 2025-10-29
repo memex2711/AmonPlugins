@@ -5,6 +5,19 @@ from pyrogram import Client, filters
 from AmonMusic import app
 
 
+
+__MODULE__ = "Tiny"
+__HELP__ = """
+<blockquote expandable>📋 <b>Tiny Commands</b>
+
+• <b>/tiny</b> – Reply to a sticker to make it tiny.
+
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
+
+</blockquote>
+"""        
+
+
 @app.on_message(filters.command("tiny"))
 async def tiny_sticker(client, message):
     reply = message.reply_to_message
