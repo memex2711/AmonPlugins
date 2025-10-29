@@ -10,6 +10,7 @@ Promotion and demotion commands with edge‑case handling and time‑bound promo
 
 📌 <i>All commands accept reply, @username, or user‑ID, with graceful usage hints.</i>
 
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
 </blockquote>
 """
 
