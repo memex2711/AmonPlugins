@@ -323,13 +323,13 @@ async def cmd_voiceall(client: Client, message: Message):
 
 
 
-__MODULE__ = "Translate"
+__MODULE__ = "Tts"
 __HELP__ = """
-<blockquote expandable>📋 <b>Translate Commands</b>
+<blockquote expandable>📋 <b>Teks To Speech Commands</b>
 
-• <b>/tr</b> – Translates text.  
 • <b>/tts</b> – Convert text to speech. 
 
 
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
 </blockquote>
 """        
