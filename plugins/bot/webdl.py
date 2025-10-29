@@ -7,6 +7,20 @@ from requests.packages.urllib3.util.retry import Retry
 from AmonMusic import app
 
 
+__MODULE__ = "Webdl"
+__HELP__ = """
+<blockquote expandable>📋 <b>Webdl Commands</b>
+
+• <b>/webdl</b> – Enter the link of a website after the command to get the source code of that website.
+
+
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
+
+</blockquote>
+"""        
+
+
+
 def download_website(url):
     headers = {
         "User-Agent": (
