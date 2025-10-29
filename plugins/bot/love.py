@@ -3,6 +3,18 @@ import random
 from AmonMusic import app
 
 
+__MODULE__ = "Love"
+__HELP__ = """
+<blockquote expandable>📋 <b>Love Commands</b>
+
+• <b>/Love</b> – Get % compatibility.
+
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
+
+</blockquote>
+"""  
+
+
 def get_random_message(love_percentage):
     if love_percentage <= 30:
         return random.choice([
