@@ -14,6 +14,22 @@ from pyrogram.types import (
 from AmonMusic import app
 from AmonMusic.utils.admin_check import is_admin
 
+
+
+
+__MODULE__ = "Zombies"
+__HELP__ = """
+<blockquote expandable>
+<b>💀 Zombie Cleaner</b>
+
+<b>★ /zombies</b> or <b>/zombie</b> - Scan and ban all deleted accounts (zombie users) from the group.
+
+<i>Only group admins can run this command.</i>
+</blockquote>
+"""
+
+
+
 chatQueue: set[int] = set()
 stopProcess: bool = False
 
