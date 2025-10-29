@@ -5,6 +5,24 @@ from pyrogram.types import Message
 from pydub import AudioSegment
 from AmonMusic import app
 
+
+
+__MODULE__ = "VideoEdit"
+__HELP__ = """
+<blockquote expandable>📋 <b>Bored Commands</b>
+
+• <b>/remove [video or audio]</b> – Reply to a video file to remove audio or video from it.
+
+
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
+
+</blockquote>
+"""        
+
+
+
+
+
 MAX_SIZE_MB = 50
 MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024
 
