@@ -17,6 +17,8 @@ Single‑user moderation commands with complete edge‑case handling.
 📌 <i>All commands accept reply, @username, or user‑ID.
 Usage hints, duplicate‑state checks, and safe RPC handling throughout.</i>
 
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)</blockquote>
+
 </blockquote>
 """
 
