@@ -72,5 +72,6 @@ Game Commands</b>
 • /ball 🎳  • /football ⚽  • /jackpot 🎰
 • /quiz 🎳
 
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
 </blockquote>
 """        
