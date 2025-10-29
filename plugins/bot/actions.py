@@ -1,6 +1,6 @@
-__MODULE__ = "Moderation"
+__MODULE__ = "Action"
 __HELP__ = """
-<blockquote expandable>📋 <b>Moderation Commands</b>
+<blockquote expandable>📋 <b>Action Commands</b>
 Single‑user moderation commands with complete edge‑case handling.
 
 <b>/ban</b> – ban a user
