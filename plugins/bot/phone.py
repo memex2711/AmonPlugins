@@ -5,6 +5,23 @@ from pyrogram.types import Message
 
 from AmonMusic import app
 
+
+
+__MODULE__ = "Phone"
+__HELP__ = """
+<blockquote expandable>📋 <b>Phone Commands</b>
+
+• <b>/phone [number]</b> – Enter your phone number after the command to get details.
+
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
+
+</blockquote>
+"""        
+
+
+
+
+
 API_KEY = "f66950368a61ebad3cba9b5924b4532d"
 API_URL = "http://apilayer.net/api/validate"
 
