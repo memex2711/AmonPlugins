@@ -64,13 +64,12 @@ async def remove_bg_command(client, message):
         await status.edit(f"❌ Failed to process the image.\nError: {e}")
 
 
-__MODULE__ = "Images"
+__MODULE__ = "Rmbg"
 __HELP__ = """
-<blockquote expandable>📋 <b>Images Commands</b>
+<blockquote expandable>📋 <b>Remove Background Images Commands</b>
 
-• /getdraw - Generates a drawing based on a given prompt.
-• /upscale - Reply to an image to upscale it and improve its quality.
 • /rmbg - Removes the background from an image.
 
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
 </blockquote>
 """        
