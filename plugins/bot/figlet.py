@@ -60,5 +60,7 @@ __HELP__ = """
 
 • <b>/figlet [teks]</b> – Convert teks to ASCII art.
 
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
+
 </blockquote>
 """        
