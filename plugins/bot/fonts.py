@@ -173,5 +173,7 @@ __HELP__ = """
 
 • <b>/font or /fonts</b> – Generate font styles from text.  
 
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
+
 </blockquote>
 """        
