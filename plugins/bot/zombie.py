@@ -161,7 +161,7 @@ __HELP__ = """
 
 • /zombies - Removes deleted accounts from the group.
 
-✧ These modules by ➪ [fr rasta](https://t.me/root404byte)</blockquote>
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
 
 </blockquote>
 """        
