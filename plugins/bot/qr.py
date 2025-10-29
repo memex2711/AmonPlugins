@@ -5,6 +5,20 @@ import qrcode
 import io
 
 
+__MODULE__ = "Qr_Gen"
+__HELP__ = """
+<blockquote expandable>📋 <b>Qr_Gen Commands</b>
+
+• <b>/qr</b> – Generate a QR code from text.
+
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
+
+</blockquote>
+"""        
+
+
+
+
 def generate_qr_code(text):
     qr = qrcode.QRCode(
         version=1,
