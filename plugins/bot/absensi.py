@@ -174,7 +174,7 @@ __HELP__ = """
 
 📌 <i>Use these commands in group chats to track who is present.</i>
 
-✧ These modules by ➪ [fr rasta](https://t.me/root404byte)</blockquote>
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
 
 </blockquote>
 """        
