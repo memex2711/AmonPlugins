@@ -92,5 +92,7 @@ __HELP__ = """
 
 • <b>/purge or /spurge</b> – Smaller scale deletions. 
 
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
+
 </blockquote>
 """        
