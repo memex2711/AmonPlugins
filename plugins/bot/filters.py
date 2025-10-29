@@ -201,7 +201,7 @@ __HELP__ = """
 • <b>/stopfilter</b> (name) – Remove a specific filter.
 • <b>/stopall</b> – Delete all filters in this chat.
 
-✧ These modules by ➪ [fr rasta](https://t.me/root404byte)</blockquote>
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
 
 </blockquote>
 """    
