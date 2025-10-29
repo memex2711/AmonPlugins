@@ -5,6 +5,19 @@ import requests
 from AmonMusic import app
 
 
+
+__MODULE__ = "Population"
+__HELP__ = """
+<blockquote expandable>📋 <b>Population Commands</b>
+
+• <b>/population [code country]</b> – Get information population a country.
+
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
+
+</blockquote>
+"""        
+
+
 @app.on_message(filters.command("population"))
 async def country_command_handler(client: Client, message: Message):
     if len(message.text.split()) < 2:
