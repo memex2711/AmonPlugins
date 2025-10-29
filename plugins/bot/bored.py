@@ -4,6 +4,20 @@ from pyrogram.enums import ParseMode
 from AmonMusic import app
 import httpx
 
+
+__MODULE__ = "Bored"
+__HELP__ = """
+<blockquote expandable>📋 <b>Bored Commands</b>
+
+• <b>/bored </b> – Get feeling bored.
+
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
+
+</blockquote>
+"""        
+
+
+
 BORED_API_URL = "https://apis.scrimba.com/bored/api/activity"
 
 @app.on_message(filters.command("bored"))
