@@ -6,6 +6,21 @@ import pyshorteners
 import httpx
 
 
+__MODULE__ = "ShortUrl"
+__HELP__ = """
+<blockquote expandable>📋 <b>ShortUrl Commands</b>
+
+• <b>/short</b> – Enter the link that you want to shorten after the command.
+• <b>/unshort</b> – Enter the link that you want to Un-shorten after the command.
+
+
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
+
+</blockquote>
+"""        
+
+
+
 shortener = pyshorteners.Shortener()
 
 
