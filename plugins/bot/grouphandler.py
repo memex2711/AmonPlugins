@@ -142,7 +142,7 @@ __HELP__ = """
 • /removephoto - Removes the group photo
 • /groupdata - To get group info.
 
-✧ These modules by ➪ [fr rasta](https://t.me/root404byte)</blockquote>
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
 
 </blockquote>
 """        
