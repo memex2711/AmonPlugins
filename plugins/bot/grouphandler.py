@@ -140,8 +140,9 @@ __HELP__ = """
 • /setdescription - Sets the description of the group.
 • /setphoto - Sets the group photo.
 • /removephoto - Removes the group photo
-• /zombies - Removes deleted accounts from the group.
 • /groupdata - To get group info.
+
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)</blockquote>
 
 </blockquote>
 """        
