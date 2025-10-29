@@ -81,7 +81,7 @@ async def get_mime_type(url: str) -> str:
             if content_type:
                 return content_type.lower()
     except Exception as e:
-        LOGGER.error(f"Error: {e}")
+        LOGGER("AmonMusic").error(f"Error: {e}")
 
     mime, _ = mimetypes.guess_type(url)
     return mime or "application/octet-stream"
@@ -104,10 +104,10 @@ class AnimePics:
             response = await self.client.get(url)
             response.raise_for_status()
             url = response.json().get("url")
-            LOGGER.info(f"Url: {url}")
+            LOGGER("AmonMusic").info(f"Url: {url}")
             return url
         except Exception as e:
-            LOGGER.error(f"Error get_image: {e}")
+            LOGGER("AmonMusic").error(f"Error get_image: {e}")
             return None
 
     async def get_many(
@@ -122,7 +122,7 @@ class AnimePics:
             response.raise_for_status()
             return response.json().get("files", [])
         except Exception as e:
-            LOGGER.error(f"Error get_many: {e}")
+            LOGGER("AmonMusic").error(f"Error get_many: {e}")
             return []
 
     async def close(self):
