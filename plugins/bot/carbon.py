@@ -4,6 +4,19 @@ from pyrogram import filters
 from pyrogram.types import Message
 from AmonMusic import app
 
+
+__MODULE__ = "Carbon"
+__HELP__ = """
+<blockquote expandable>📋 <b>Carbon Commands</b>
+
+• <b>/carbon</b> – Teks to carbonara.
+
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
+
+</blockquote>
+"""        
+
+
 async def make_carbon(code: str) -> BytesIO | None:
     url = "https://carbonara.solopov.dev/api/cook"
     async with aiohttp.ClientSession() as session:
