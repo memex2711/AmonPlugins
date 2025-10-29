@@ -6,6 +6,21 @@ from gpytranslate import Translator
 translator = Translator()
 
 
+
+__MODULE__ = "Translate"
+__HELP__ = """
+<blockquote expandable>📋 <b>Translate Commands</b>
+
+• <b>/tr</b> – Translates text.
+
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
+
+</blockquote>
+"""        
+
+
+
+
 @app.on_message(filters.command("tr"))
 async def translate(_, message: Message):
     reply = message.reply_to_message
