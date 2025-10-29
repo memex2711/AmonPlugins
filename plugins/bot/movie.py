@@ -5,6 +5,19 @@ from AmonMusic import app
 import httpx
 
 
+__MODULE__ = "Movie"
+__HELP__ = """
+<blockquote expandable>📋 <b>Movie Commands</b>
+
+• <b>/Movie [title]</b> – To get information about a movie.
+
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
+
+</blockquote>
+"""        
+
+
+
 TMDB_API_KEY = "23c3b139c6d59ebb608fe6d5b974d888"
 TMDB_BASE = "https://api.themoviedb.org/3"
 
