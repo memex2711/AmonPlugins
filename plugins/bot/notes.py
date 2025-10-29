@@ -318,5 +318,7 @@ __HELP__ = """
 <b>/clear [name1,name2,...]</b> - Delete specific notes (comma separated).  
 <b>/clearall</b> - Delete all notes in group.
 
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
+
 </blockquote>
 """    
