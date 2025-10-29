@@ -6,6 +6,18 @@ import httpx
 import re
 
 
+__MODULE__ = "Anime"
+__HELP__ = """
+<blockquote expandable>📋 <b>Anime Commands</b>
+
+• <b>/anime [query]</b> – Search MyAnimeList.
+
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
+
+</blockquote>
+"""        
+
+
 async def get_anime_info(anime_name):
     url = 'https://graphql.anilist.co'
     query = '''
