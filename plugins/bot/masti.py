@@ -5,6 +5,19 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 from AmonMusic import app
 from config import SUPPORT_CHAT
 
+__MODULE__ = "Amon"
+__HELP__ = """
+<blockquote expandable>📋 <b>Amon Fun Commands</b>
+
+• /cute, /hot, /gay, /sexy, /horny - Self-rating fun.  
+• /kiss, /hug, /slap – Role-play replies.  
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
+
+</blockquote>
+"""        
+
+
+
 BUTTON = InlineKeyboardMarkup([[InlineKeyboardButton("ꜱᴜᴘᴘᴏʀᴛ", url=SUPPORT_CHAT)]])
 
 MEDIA = {
