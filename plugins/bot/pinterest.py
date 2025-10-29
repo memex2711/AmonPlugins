@@ -92,5 +92,6 @@ __HELP__ = """
 
 • <b>/pinterest [query]</b> – Can search images from pinterest with button scroll.
 
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
 </blockquote>
 """        
