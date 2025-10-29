@@ -5,6 +5,20 @@ from AmonMusic import app
 from config import BOT_USERNAME
 
 
+__MODULE__ = "Password"
+__HELP__ = """
+<blockquote expandable>📋 <b>Password Commands</b>
+
+• <b>/genpw</b> – Generate a strong password.
+
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
+
+</blockquote>
+"""        
+
+
+
+
 @app.on_message(filters.command(["genpassword", "genpw"]))
 async def password(bot, message):
     processing = await message.reply_text("Pʀᴏᴄᴇꜱꜱɪɴɢ...")
