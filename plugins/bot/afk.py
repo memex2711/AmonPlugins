@@ -421,5 +421,6 @@ __HELP__ = """
 📌 You can also send a sticker, photo, or video to show your AFK
 📌 To disable AFK, just send any message.
 
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
 </blockquote>
 """                 
