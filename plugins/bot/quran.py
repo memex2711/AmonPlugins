@@ -123,5 +123,7 @@ __HELP__ = """
 • /surah - Get info surah and audio surah.
 • /listsurah - Get show list from surah.
 
+
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
 </blockquote>
 """        
