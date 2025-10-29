@@ -7,6 +7,8 @@ Delete all group messages using an assistant account, with owner‑only confirma
 <b>/deleteall</b> – prompts the owner for confirmation, then clears the chat history via assistant.
   Uses `assistant.delete_chat_history(chat_id, revoke=True)` under the hood.
   Falls back to manual batch deletion if needed.
+
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
   
 </blockquote>  
 """
