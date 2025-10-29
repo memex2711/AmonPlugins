@@ -5,6 +5,21 @@ from pyrogram import filters
 from pyrogram.types import Message
 from AmonMusic import app
 
+
+__MODULE__ = "Mimify"
+__HELP__ = """
+<blockquote expandable>📋 <b>Meme-ify Commands</b>
+
+• <b>/mmf</b> – Meme-ify the image or sticker.
+
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
+
+</blockquote>
+"""        
+
+
+
+
 @app.on_message(filters.command("mmf"))
 async def mmf(_, message: Message):
     chat_id = message.chat.id
