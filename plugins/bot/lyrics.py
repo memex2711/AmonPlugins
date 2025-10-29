@@ -10,6 +10,21 @@ from config import API_BOTCHAX
 from AmonMusic import app
 from AmonMusic.utils.decorators.language import language
 
+
+
+__MODULE__ = "Lyrics"
+__HELP__ = """
+<blockquote expandable>📋 <b>Lyrics Commands</b>
+
+• <b>/lyrics</b> – To search lyrics with tittle songs.
+
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
+
+</blockquote>
+"""  
+
+
+
 @app.on_message(filters.command("lyrics"))
 @language
 async def lyrics_handler(client, message: Message, _):
