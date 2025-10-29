@@ -154,7 +154,7 @@ async def waifu_command(client, message):
     mime_type = await get_mime_type(url)
 
     try:
-        reply_id = await client.ReplyCheck(message)
+        reply_id = client.ReplyCheck(message)
         if mime_type == "image/gif" or mime_type.startswith("video/"):
             return await message.reply_video(url, reply_to_message_id=reply_id)
         elif mime_type.startswith("image/"):
