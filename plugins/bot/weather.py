@@ -3,6 +3,23 @@ from pyrogram import Client, filters, enums
 from pyrogram.types import Message
 from AmonMusic import app
 
+
+__MODULE__ = "Weather"
+__HELP__ = """
+<blockquote expandable>📋 <b>Weather Commands</b>
+
+• <b>/weather</b> – Enter the location after the command to get the weather of that location.
+
+
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
+
+</blockquote>
+"""        
+
+
+
+
+
 timeout = httpx.Timeout(40.0)
 http = httpx.AsyncClient(http2=True, timeout=timeout)
 
