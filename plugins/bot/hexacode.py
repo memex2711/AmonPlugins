@@ -56,5 +56,7 @@ __HELP__ = """
 • <b>/encode</b> – To endcode.  
 • <b>/decode</b> –  To decode.  
 
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
+
 </blockquote>
 """        
