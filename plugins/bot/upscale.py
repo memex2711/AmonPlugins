@@ -8,6 +8,21 @@ from pyrogram import filters
 from pyrogram.types import Message
 
 
+__MODULE__ = "Upscale"
+__HELP__ = """
+<blockquote expandable>📋 <b>Upscale  & Get Draw Commands</b>
+
+• <b>/upscale</b> – Reply to an image to upscale it and improve its quality.
+• <b>/getdraw</b> – Generates a drawing based on a given prompt.
+
+
+✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
+
+</blockquote>
+"""        
+
+
+
 async def download_from_url(path: str, url: str) -> str:
     os.makedirs(os.path.dirname(path), exist_ok=True)
     async with aiohttp.ClientSession() as session:
