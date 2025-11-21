@@ -50,15 +50,15 @@ async def mulai_absen(_, message: Message):
     await dB.set_var(chat_id, "ABSENSI", [])
     data = [] 
 
-    absen_text = f"""**{message.chat.title}
-Daftar hadir hari** {date_str}.
+    absen_text = f"""**{message.chat.title}**
+Daftar hadir hari {date_str}.
 
 <blockquote expandable>
 {format_absen_list(data)}
 </blockquote>
 
-**Waktu dalam timezone WIB (UTC+7).
-Yang telah hadir, silakan klik tombol HADIR di bawah ini.**"""
+Waktu dalam timezone WIB (UTC+7).
+Yang telah hadir, silakan klik tombol HADIR di bawah ini."""
     
     keyboard = InlineKeyboardMarkup(
         [[InlineKeyboardButton("☑️  Hadir", callback_data="Hadir")]]
@@ -74,15 +74,15 @@ async def refresh_absen(_, message: Message):
     data = await dB.get_var(chat_id, "ABSENSI") or []
     data = sorted(data, key=lambda x: x["time"])
 
-    absen_text = f"""**{message.chat.title}
-Daftar hadir hari {date_str}.**
+    absen_text = f"""**{message.chat.title}**
+Daftar hadir hari {date_str}.
 
 <blockquote expandable>
 {format_absen_list(data)}
 </blockquote>
 
-**Waktu dalam timezone WIB (UTC+7).
-Yang telah hadir, silakan klik tombol HADIR di bawah ini.**"""
+Waktu dalam timezone WIB (UTC+7).
+Yang telah hadir, silakan klik tombol HADIR di bawah ini."""
     
     keyboard = InlineKeyboardMarkup(
         [[InlineKeyboardButton("☑️  Hadir", callback_data="Hadir")]]
@@ -100,16 +100,16 @@ async def selesai_absen(_, message: Message):
 
     await dB.remove_var(chat_id, "ABSENSI")
 
-    absen_text = f"""**{message.chat.title}
-Daftar hadir hari {date_str}.**
+    absen_text = f"""**{message.chat.title}**
+Daftar hadir hari {date_str}.
 
 <blockquote expandable>
 {format_absen_list(data)}
 </blockquote>
 
-**Sesi absensi telah diakhiri oleh Admin.**
+Sesi absensi telah diakhiri oleh Admin.
 
-**Waktu dalam timezone WIB (UTC+7).**"""
+Waktu dalam timezone WIB (UTC+7)."""
     
     return await message.reply(absen_text)
 
@@ -144,15 +144,15 @@ async def hadir_callback(_, callback_query: CallbackQuery):
     try:
         now = datetime.now(pytz.timezone("Asia/Jakarta"))
         date_str = format_tanggal_indo(now)
-        text = f"""**{callback_query.message.chat.title}
-Daftar hadir hari {date_str}.**
+        text = f"""**{callback_query.message.chat.title}**
+Daftar hadir hari {date_str}.
 
 <blockquote expandable>
 {format_absen_list(data)}
 </blockquote>
 
-**Waktu dalam timezone WIB (UTC+7).
-Yang telah hadir, silakan klik tombol HADIR di bawah ini.**"""
+Waktu dalam timezone WIB (UTC+7).
+Yang telah hadir, silakan klik tombol HADIR di bawah ini."""
         
         keyboard = InlineKeyboardMarkup(
             [[InlineKeyboardButton("☑️  Hadir", callback_data="Hadir")]]
