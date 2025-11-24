@@ -8,10 +8,8 @@ import traceback
 from pyrogram import filters
 from pyrogram.types import (
     Message, MessageEntity, ReplyParameters, Chat,
-    MessageOriginUser,  
-    MessageOriginChannel, 
-    MessageOriginHiddenUser,
-    MessageOriginChat 
+    # HAPUS: MessageOriginUser, MessageOriginChannel, MessageOriginHiddenUser, MessageOriginChat
+    # Objek-objek ini dihapus karena menyebabkan ImportError di Pyrogram lama
 ) 
 from pyrogram.enums import ChatType
 
@@ -48,29 +46,25 @@ class Quotly:
     ]
 
     @staticmethod
-    async def forward_info(reply: Message):
-        origin = reply.forward_origin
+    async def forward_info(reply: Message): # <-- FUNGSI DIGANTI UNTUK PYROGRAM V1.X
         sid, title, name = 0, "Unknown User", "Unknown User"
 
-        if origin:
-            origin_type = origin.type 
-            
-            if origin_type == "user":
-                user = origin.sender_user
-                sid = user.id
-                name = user.first_name
-                if user.last_name:
-                    name += f" {user.last_name}"
-                title = name
-            elif origin_type == "chat":
-                chat: Chat = origin.chat
-                sid = chat.id
-                title = chat.title or chat.type.name
-                name = title
-            elif origin_type == "hidden_user":
-                title = name = origin.sender_user_name or "Hidden User"
-                sid = 0
-
+        # Menggunakan atribut lama Pyrogram (forward_from, forward_from_chat, forward_sender_name)
+        if reply.forward_from_chat:
+            chat: Chat = reply.forward_from_chat
+            sid = chat.id
+            title = chat.title or chat.type.name
+            name = title
+        elif reply.forward_from:
+            user = reply.forward_from
+            sid = user.id
+            name = user.first_name
+            if user.last_name:
+                name += f" {user.last_name}"
+            title = name
+        elif reply.forward_sender_name:
+            title = name = reply.forward_sender_name
+            sid = 0
         elif reply.from_user:
             user = reply.from_user
             sid = user.id
@@ -99,8 +93,9 @@ class Quotly:
         return []
 
     @staticmethod
-    async def get_emoji(message: Message):
-        if message.from_user and message.from_user.emoji_status:
+    async def get_emoji(message: Message): # <-- FUNGSI DIGANTI UNTUK PYROGRAM V1.X
+        # Menggunakan getattr untuk memastikan kompatibilitas (safety check)
+        if message.from_user and getattr(message.from_user, "emoji_status", None):
             emoji_status = str(message.from_user.emoji_status.custom_emoji_id)
         else:
             emoji_status = ""
@@ -124,6 +119,10 @@ class Quotly:
 
 @app.on_message(filters.command("q") & ~filters.private)
 async def qoutly_cmd(client, message: Message):
+    # Cek apakah config.OWNER_ID sudah diimpor. Jika belum, Anda mungkin perlu menambahkan
+    # `from config import OWNER_ID` di bagian atas file, atau mengganti `config.OWNER_ID` dengan `SUDO_USERS`
+    # jika itu yang Anda gunakan di userbot. Saya asumsikan `config.OWNER_ID` sudah tersedia.
+    
     if not message.reply_to_message:
         return await message.reply(f">**Please reply to a message!**")
 
@@ -137,6 +136,7 @@ async def qoutly_cmd(client, message: Message):
         return cmd[index] if len(cmd) > index else random.choice(Quotly.colors)
 
     try:
+        # --- Bagian Logika Lain tidak diubah, karena sudah memanggil Quotly.forward_info yang diperbaiki ---
         if not cmd or (cmd[0] not in Quotly.colors and not cmd[0].startswith('@') and not cmd[0].isdigit() and cmd[0] != '-r'):
             payload = {
                 "type": "quote",
@@ -175,7 +175,9 @@ async def qoutly_cmd(client, message: Message):
             except Exception:
                 return await pros.edit(f">**Invalid username or user not found.**")
 
-            if user.id in config.OWNER_ID:
+            # Perlu diperhatikan: OWNER_ID harus diimpor di file ini
+            # Asumsi: Anda memiliki variabel global 'config' yang berisi OWNER_ID
+            if user.id in config.OWNER_ID: 
                 return await pros.edit(f">**You can't quote this user**")
 
             fake_msg = user
@@ -184,7 +186,8 @@ async def qoutly_cmd(client, message: Message):
                 name += f" {fake_msg.last_name}"
 
             emoji_status = None
-            if fake_msg.emoji_status:
+            # Menggunakan getattr untuk safety check
+            if getattr(fake_msg, "emoji_status", None):
                 emoji_status = str(fake_msg.emoji_status.custom_emoji_id)
 
             reply_message = {}
@@ -195,7 +198,8 @@ async def qoutly_cmd(client, message: Message):
                 if replied.from_user.last_name:
                     replied_name += f" {replied.from_user.last_name}"
                 emoji_status_reply = None
-                if replied.from_user.emoji_status:
+                # Menggunakan getattr untuk safety check
+                if getattr(replied.from_user, "emoji_status", None):
                     emoji_status_reply = str(
                         replied.from_user.emoji_status.custom_emoji_id
                     )
@@ -232,7 +236,8 @@ async def qoutly_cmd(client, message: Message):
             if replied.from_user.last_name:
                 replied_name += f" {replied.from_user.last_name}"
             emoji_status = None
-            if replied.from_user.emoji_status:
+            # Menggunakan getattr untuk safety check
+            if getattr(replied.from_user, "emoji_status", None):
                 emoji_status = str(replied.from_user.emoji_status.custom_emoji_id)
                 
             reply_message = {
@@ -408,4 +413,4 @@ __HELP__ = """
 
 ✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
 </blockquote>
-"""        
+"""
