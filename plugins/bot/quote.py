@@ -8,12 +8,11 @@ import traceback
 from pyrogram import filters
 from pyrogram.types import (
     Message, MessageEntity, Chat,
-    # Hanya impor yang kompatibel dengan Pyrogram v1.x
 ) 
 from pyrogram.enums import ChatType
 
 from AmonMusic import app, LOGGER
-# Ganti 'config' jika Anda menggunakan cara impor yang berbeda (misalnya dari 'db' atau file lain)
+
 from config import OWNER_ID 
 
 
@@ -22,7 +21,6 @@ class QuotlyException(Exception):
 
 
 class Quotly:
-    """Kelas modular yang menampung semua logika Quotly (mirip helpers.py Anda)."""
     colors = [
         "White", "Navy", "DarkBlue", "MediumBlue", "Blue", "DarkGreen", "Green", "Teal", "DarkCyan", 
         "DeepSkyBlue", "DarkTurquoise", "MediumSpringGreen", "Lime", "SpringGreen", "Aqua", "Cyan", 
@@ -49,7 +47,6 @@ class Quotly:
 
     @staticmethod
     async def forward_info(reply: Message):
-        """Menggunakan atribut pesan lama (forward_from, forward_from_chat) untuk kompatibilitas v1.x."""
         sid, title, name = 0, "Unknown User", "Unknown User"
 
         if reply.forward_from_chat:
@@ -79,17 +76,14 @@ class Quotly:
     
     @staticmethod
     async def t_or_c(message: Message):
-        """Mengambil teks atau caption pesan."""
         return message.text or message.caption or ""
             
     @staticmethod
     async def get_entities(message: Message) -> list[MessageEntity]:
-        """Mengambil entitas pesan (bold, italic, dll.)."""
         return message.entities or message.caption_entities or []
 
     @staticmethod
     async def get_emoji(message: Message):
-        """Mendapatkan emoji status menggunakan getattr untuk safety check v1.x."""
         if message.from_user and getattr(message.from_user, "emoji_status", None):
             emoji_status = str(message.from_user.emoji_status.custom_emoji_id)
         else:
@@ -98,7 +92,6 @@ class Quotly:
 
     @staticmethod
     async def quotly(payload):
-        """Mengirim payload ke Quotly API dan mengembalikan gambar."""
         url = "https://bot.lyo.su/quote/generate.png"
         async with aiohttp.ClientSession() as session:
             async with session.post(url, json=payload) as resp:
@@ -111,8 +104,6 @@ class Quotly:
                     except aiohttp.ContentTypeError:
                         raise QuotlyException(f"Quotly API returned status {resp.status}")
 
-
-# --- FUNGSI UTAMA BOT ---
 
 @app.on_message(filters.command("q") & ~filters.private)
 async def qoutly_cmd(client, message: Message):
@@ -130,7 +121,6 @@ async def qoutly_cmd(client, message: Message):
 
     try:
         
-        # --- Logika Command ---
         if not cmd or (cmd[0] not in Quotly.colors and not cmd[0].startswith('@') and not cmd[0].isdigit() and cmd[0] != '-r'):
             payload = {
                 "type": "quote", "format": "png",
@@ -287,7 +277,6 @@ async def qoutly_cmd(client, message: Message):
             }
             payload["messages"].append(messages_json)
         
-        # --- Pengiriman Sticker (Pyrogram v1.x Compatible) ---
         hasil = await Quotly.quotly(payload)
         bio_sticker = io.BytesIO(hasil)
         bio_sticker.name = "biosticker.webp"
@@ -295,7 +284,7 @@ async def qoutly_cmd(client, message: Message):
         await client.send_sticker(
             message.chat.id, 
             sticker=bio_sticker, 
-            reply_to_message_id=message.reply_to_message.id # <-- Sintaks V1.x
+            reply_to_message_id=message.reply_to_message.id 
         )
         await pros.delete()
 
@@ -306,7 +295,6 @@ async def qoutly_cmd(client, message: Message):
         await pros.edit(f">**ERROR:** `{str(e)}`")
 
 
-# --- FUNGSI QCOLOR (Pyrogram v1.x Compatible) ---
 @app.on_message(filters.command("qcolor") & ~filters.private)
 async def qcolor_cmd(client, message: Message):
     iymek = f"\n•".join(Quotly.colors)
@@ -319,7 +307,7 @@ async def qcolor_cmd(client, message: Message):
             message.chat.id,
             "qcolor.txt", 
             caption=f">**Color for quotly**",
-            reply_to_message_id=message.id # <-- Sintaks V1.x
+            reply_to_message_id=message.id
         )
         os.remove("qcolor.txt")
         return
