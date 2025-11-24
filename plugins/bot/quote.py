@@ -46,10 +46,9 @@ class Quotly:
     ]
 
     @staticmethod
-    async def forward_info(reply: Message): # <-- FUNGSI DIGANTI UNTUK PYROGRAM V1.X
+    async def forward_info(reply: Message): 
         sid, title, name = 0, "Unknown User", "Unknown User"
 
-        # Menggunakan atribut lama Pyrogram (forward_from, forward_from_chat, forward_sender_name)
         if reply.forward_from_chat:
             chat: Chat = reply.forward_from_chat
             sid = chat.id
