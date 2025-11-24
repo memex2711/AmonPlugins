@@ -7,13 +7,14 @@ import traceback
 
 from pyrogram import filters
 from pyrogram.types import (
-    Message, MessageEntity, ReplyParameters, Chat,
-    # HAPUS: MessageOriginUser, MessageOriginChannel, MessageOriginHiddenUser, MessageOriginChat
-    # Objek-objek ini dihapus karena menyebabkan ImportError di Pyrogram lama
+    Message, MessageEntity, Chat,
+    # Hanya impor yang kompatibel dengan Pyrogram v1.x
 ) 
 from pyrogram.enums import ChatType
 
 from AmonMusic import app, LOGGER
+# Ganti 'config' jika Anda menggunakan cara impor yang berbeda (misalnya dari 'db' atau file lain)
+from config import OWNER_ID 
 
 
 class QuotlyException(Exception):
@@ -21,6 +22,7 @@ class QuotlyException(Exception):
 
 
 class Quotly:
+    """Kelas modular yang menampung semua logika Quotly (mirip helpers.py Anda)."""
     colors = [
         "White", "Navy", "DarkBlue", "MediumBlue", "Blue", "DarkGreen", "Green", "Teal", "DarkCyan", 
         "DeepSkyBlue", "DarkTurquoise", "MediumSpringGreen", "Lime", "SpringGreen", "Aqua", "Cyan", 
@@ -46,7 +48,8 @@ class Quotly:
     ]
 
     @staticmethod
-    async def forward_info(reply: Message): 
+    async def forward_info(reply: Message):
+        """Menggunakan atribut pesan lama (forward_from, forward_from_chat) untuk kompatibilitas v1.x."""
         sid, title, name = 0, "Unknown User", "Unknown User"
 
         if reply.forward_from_chat:
@@ -76,24 +79,17 @@ class Quotly:
     
     @staticmethod
     async def t_or_c(message: Message):
-        if message.text:
-            return message.text
-        elif message.caption:
-            return message.caption
-        else:
-            return ""
+        """Mengambil teks atau caption pesan."""
+        return message.text or message.caption or ""
             
     @staticmethod
     async def get_entities(message: Message) -> list[MessageEntity]:
-        if message.text:
-            return message.entities or [] 
-        elif message.caption:
-            return message.caption_entities or []
-        return []
+        """Mengambil entitas pesan (bold, italic, dll.)."""
+        return message.entities or message.caption_entities or []
 
     @staticmethod
-    async def get_emoji(message: Message): # <-- FUNGSI DIGANTI UNTUK PYROGRAM V1.X
-        # Menggunakan getattr untuk memastikan kompatibilitas (safety check)
+    async def get_emoji(message: Message):
+        """Mendapatkan emoji status menggunakan getattr untuk safety check v1.x."""
         if message.from_user and getattr(message.from_user, "emoji_status", None):
             emoji_status = str(message.from_user.emoji_status.custom_emoji_id)
         else:
@@ -102,6 +98,7 @@ class Quotly:
 
     @staticmethod
     async def quotly(payload):
+        """Mengirim payload ke Quotly API dan mengembalikan gambar."""
         url = "https://bot.lyo.su/quote/generate.png"
         async with aiohttp.ClientSession() as session:
             async with session.post(url, json=payload) as resp:
@@ -115,13 +112,10 @@ class Quotly:
                         raise QuotlyException(f"Quotly API returned status {resp.status}")
 
 
+# --- FUNGSI UTAMA BOT ---
 
 @app.on_message(filters.command("q") & ~filters.private)
 async def qoutly_cmd(client, message: Message):
-    # Cek apakah config.OWNER_ID sudah diimpor. Jika belum, Anda mungkin perlu menambahkan
-    # `from config import OWNER_ID` di bagian atas file, atau mengganti `config.OWNER_ID` dengan `SUDO_USERS`
-    # jika itu yang Anda gunakan di userbot. Saya asumsikan `config.OWNER_ID` sudah tersedia.
-    
     if not message.reply_to_message:
         return await message.reply(f">**Please reply to a message!**")
 
@@ -135,22 +129,19 @@ async def qoutly_cmd(client, message: Message):
         return cmd[index] if len(cmd) > index else random.choice(Quotly.colors)
 
     try:
-        # --- Bagian Logika Lain tidak diubah, karena sudah memanggil Quotly.forward_info yang diperbaiki ---
+        
+        # --- Logika Command ---
         if not cmd or (cmd[0] not in Quotly.colors and not cmd[0].startswith('@') and not cmd[0].isdigit() and cmd[0] != '-r'):
             payload = {
-                "type": "quote",
-                "format": "png",
-                "backgroundColor": get_color(),
-                "messages": [],
+                "type": "quote", "format": "png",
+                "backgroundColor": get_color(), "messages": [],
             }
             sid, title, name = await Quotly.forward_info(reply_msg)
             messages_json = {
                 "entities": await Quotly.get_entities(reply_msg), 
                 "avatar": True,
                 "from": {
-                    "id": sid,
-                    "title": title,
-                    "name": name,
+                    "id": sid, "title": title, "name": name,
                     "emoji_status": await Quotly.get_emoji(reply_msg),
                 },
                 "text": await Quotly.t_or_c(reply_msg),
@@ -162,10 +153,7 @@ async def qoutly_cmd(client, message: Message):
             color = get_color(1)
             include_reply = len(cmd) > 2 and cmd[2] == "-r"
             payload = {
-                "type": "quote",
-                "format": "png",
-                "backgroundColor": color,
-                "messages": [],
+                "type": "quote", "format": "png", "backgroundColor": color, "messages": [],
             }
             username = cmd[0][1:]
             
@@ -174,34 +162,23 @@ async def qoutly_cmd(client, message: Message):
             except Exception:
                 return await pros.edit(f">**Invalid username or user not found.**")
 
-            # Perlu diperhatikan: OWNER_ID harus diimpor di file ini
-            # Asumsi: Anda memiliki variabel global 'config' yang berisi OWNER_ID
-            if user.id in config.OWNER_ID: 
+            if user.id in OWNER_ID:
                 return await pros.edit(f">**You can't quote this user**")
 
             fake_msg = user
             name = fake_msg.first_name
-            if fake_msg.last_name:
-                name += f" {fake_msg.last_name}"
+            if fake_msg.last_name: name += f" {fake_msg.last_name}"
 
-            emoji_status = None
-            # Menggunakan getattr untuk safety check
-            if getattr(fake_msg, "emoji_status", None):
-                emoji_status = str(fake_msg.emoji_status.custom_emoji_id)
+            emoji_status = str(getattr(fake_msg, "emoji_status", None).custom_emoji_id) if getattr(fake_msg, "emoji_status", None) else None
 
             reply_message = {}
             if include_reply and reply_msg.reply_to_message and reply_msg.reply_to_message.from_user:
                 replied = reply_msg.reply_to_message
                 
                 replied_name = replied.from_user.first_name
-                if replied.from_user.last_name:
-                    replied_name += f" {replied.from_user.last_name}"
-                emoji_status_reply = None
-                # Menggunakan getattr untuk safety check
-                if getattr(replied.from_user, "emoji_status", None):
-                    emoji_status_reply = str(
-                        replied.from_user.emoji_status.custom_emoji_id
-                    )
+                if replied.from_user.last_name: replied_name += f" {replied.from_user.last_name}"
+                
+                emoji_status_reply = str(getattr(replied.from_user, "emoji_status", None).custom_emoji_id) if getattr(replied.from_user, "emoji_status", None) else None
 
                 reply_message = {
                     "chatId": replied.from_user.id,
@@ -215,10 +192,7 @@ async def qoutly_cmd(client, message: Message):
                 "entities": await Quotly.get_entities(reply_msg), 
                 "avatar": True,
                 "from": {
-                    "id": fake_msg.id,
-                    "title": name,
-                    "name": name,
-                    "emoji_status": emoji_status,
+                    "id": fake_msg.id, "title": name, "name": name, "emoji_status": emoji_status,
                 },
                 "text": await Quotly.t_or_c(reply_msg),
                 "replyMessage": reply_message,
@@ -232,38 +206,25 @@ async def qoutly_cmd(client, message: Message):
                  return await pros.edit(f">**Please reply to a message that has a reply.**")
                  
             replied_name = replied.from_user.first_name
-            if replied.from_user.last_name:
-                replied_name += f" {replied.from_user.last_name}"
-            emoji_status = None
-            # Menggunakan getattr untuk safety check
-            if getattr(replied.from_user, "emoji_status", None):
-                emoji_status = str(replied.from_user.emoji_status.custom_emoji_id)
+            if replied.from_user.last_name: replied_name += f" {replied.from_user.last_name}"
+            
+            emoji_status_reply = str(getattr(replied.from_user, "emoji_status", None).custom_emoji_id) if getattr(replied.from_user, "emoji_status", None) else None
                 
             reply_message = {
-                "chatId": replied.from_user.id,
-                "entities": await Quotly.get_entities(replied), 
-                "name": replied_name,
-                "text": await Quotly.t_or_c(replied),
-                "emoji_status": emoji_status,
+                "chatId": replied.from_user.id, "entities": await Quotly.get_entities(replied), 
+                "name": replied_name, "text": await Quotly.t_or_c(replied), "emoji_status": emoji_status_reply,
             }
             
             color = get_color(1) 
             
             payload = {
-                "type": "quote",
-                "format": "png",
-                "backgroundColor": color,
-                "messages": [],
+                "type": "quote", "format": "png", "backgroundColor": color, "messages": [],
             }
             sid, title, name = await Quotly.forward_info(reply_msg)
             messages_json = {
-                "entities": await Quotly.get_entities(reply_msg), 
-                "avatar": True,
+                "entities": await Quotly.get_entities(reply_msg), "avatar": True,
                 "from": {
-                    "id": sid,
-                    "title": title,
-                    "name": name,
-                    "emoji_status": await Quotly.get_emoji(reply_msg),
+                    "id": sid, "title": title, "name": name, "emoji_status": await Quotly.get_emoji(reply_msg),
                 },
                 "text": await Quotly.t_or_c(reply_msg),
                 "replyMessage": reply_message,
@@ -272,19 +233,13 @@ async def qoutly_cmd(client, message: Message):
 
         elif cmd[0].isdigit():
             count = int(cmd[0])
-            if count <= 0:
-                return await pros.edit(f">**Number must be greater than 0**")
-            if count > 10:
-                return await pros.edit(f">**Max 10 messages**")
+            if count <= 0: return await pros.edit(f">**Number must be greater than 0**")
+            if count > 10: return await pros.edit(f">**Max 10 messages**")
 
             color = get_color(1)
             
             payload = {
-                "type": "quote",
-                "format": "png",
-                "backgroundColor": color,
-                "messages": [],
-                "scale": 2,
+                "type": "quote", "format": "png", "backgroundColor": color, "messages": [], "scale": 2,
             }
             
             history_messages = []
@@ -293,15 +248,11 @@ async def qoutly_cmd(client, message: Message):
             for i in range(count):
                 try:
                     msg = await client.get_messages(reply_msg.chat.id, current_id - i)
-                    if msg:
-                        history_messages.append(msg)
-                    else:
-                        break 
-                except Exception:
-                    break
+                    if msg: history_messages.append(msg)
+                    else: break 
+                except Exception: break
             
             history_messages.reverse() 
-            
             unique_messages = []
             seen_ids = set()
             for msg in history_messages:
@@ -309,20 +260,14 @@ async def qoutly_cmd(client, message: Message):
                     unique_messages.append(msg)
                     seen_ids.add(msg.id)
 
-            
             for msg in unique_messages:
                 sid, title, name = await Quotly.forward_info(msg)
                 messages_json = {
-                    "entities": await Quotly.get_entities(msg), 
-                    "avatar": True,
+                    "entities": await Quotly.get_entities(msg), "avatar": True,
                     "from": {
-                        "id": sid,
-                        "title": title,
-                        "name": name,
-                        "emoji_status": await Quotly.get_emoji(msg),
+                        "id": sid, "title": title, "name": name, "emoji_status": await Quotly.get_emoji(msg),
                     },
-                    "text": await Quotly.t_or_c(msg),
-                    "replyMessage": {},
+                    "text": await Quotly.t_or_c(msg), "replyMessage": {},
                 }
                 payload["messages"].append(messages_json)
                 
@@ -330,36 +275,27 @@ async def qoutly_cmd(client, message: Message):
             
         elif cmd[0] in Quotly.colors:
             payload = {
-                "type": "quote",
-                "format": "png",
-                "backgroundColor": cmd[0],
-                "messages": [],
+                "type": "quote", "format": "png", "backgroundColor": cmd[0], "messages": [],
             }
             sid, title, name = await Quotly.forward_info(reply_msg)
             messages_json = {
-                "entities": await Quotly.get_entities(reply_msg), 
-                "avatar": True,
+                "entities": await Quotly.get_entities(reply_msg), "avatar": True,
                 "from": {
-                    "id": sid,
-                    "title": title,
-                    "name": name,
-                    "emoji_status": await Quotly.get_emoji(reply_msg),
+                    "id": sid, "title": title, "name": name, "emoji_status": await Quotly.get_emoji(reply_msg),
                 },
-                "text": await Quotly.t_or_c(reply_msg),
-                "replyMessage": {},
+                "text": await Quotly.t_or_c(reply_msg), "replyMessage": {},
             }
             payload["messages"].append(messages_json)
         
+        # --- Pengiriman Sticker (Pyrogram v1.x Compatible) ---
         hasil = await Quotly.quotly(payload)
         bio_sticker = io.BytesIO(hasil)
         bio_sticker.name = "biosticker.webp"
         
-        reply_params = ReplyParameters(message_id=message.reply_to_message.id)
-        
         await client.send_sticker(
             message.chat.id, 
             sticker=bio_sticker, 
-            reply_parameters=reply_params 
+            reply_to_message_id=message.reply_to_message.id # <-- Sintaks V1.x
         )
         await pros.delete()
 
@@ -370,6 +306,7 @@ async def qoutly_cmd(client, message: Message):
         await pros.edit(f">**ERROR:** `{str(e)}`")
 
 
+# --- FUNGSI QCOLOR (Pyrogram v1.x Compatible) ---
 @app.on_message(filters.command("qcolor") & ~filters.private)
 async def qcolor_cmd(client, message: Message):
     iymek = f"\n•".join(Quotly.colors)
@@ -378,13 +315,11 @@ async def qcolor_cmd(client, message: Message):
         async with aiofiles.open("qcolor.txt", "w") as file:
             await file.write(iymek)
         
-        reply_params = ReplyParameters(message_id=message.id)
-
         await client.send_document(
             message.chat.id,
             "qcolor.txt", 
             caption=f">**Color for quotly**",
-            reply_parameters=reply_params
+            reply_to_message_id=message.id # <-- Sintaks V1.x
         )
         os.remove("qcolor.txt")
         return
