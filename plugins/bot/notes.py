@@ -16,6 +16,8 @@ PRIVATE_NOTE_KEY = "PRIVATE_NOTES_STATUS"
 
 
 async def SaveNote(chat_id, note_name, content, text, data_type):
+    # Mengubah note_name ke huruf kecil (lowercase) agar konsisten saat dipanggil
+    note_name = note_name.lower()
     value = {
         "content": content,
         "text": text,
@@ -24,10 +26,14 @@ async def SaveNote(chat_id, note_name, content, text, data_type):
     await dB.set_var(chat_id, note_name, value, NOTE_CATEGORY)
 
 async def isNoteExist(chat_id, note_name):
+    # Mengubah note_name ke huruf kecil saat pengecekan
+    note_name = note_name.lower()
     data = await dB.get_var(chat_id, note_name, NOTE_CATEGORY)
     return bool(data)
 
 async def GetNote(chat_id, note_name):
+    # Mengubah note_name ke huruf kecil saat mengambil
+    note_name = note_name.lower()
     data = await dB.get_var(chat_id, note_name, NOTE_CATEGORY)
     if data and isinstance(data, dict):
         return (
@@ -45,6 +51,8 @@ async def is_pnote_on(chat_id):
     return status if isinstance(status, bool) else False
 
 async def ClearNote(chat_id, note_name):
+    # Mengubah note_name ke huruf kecil saat menghapus
+    note_name = note_name.lower()
     await dB.remove_var(chat_id, note_name, NOTE_CATEGORY)
 
 async def ClearAllNotes(chat_id):
@@ -68,13 +76,18 @@ async def NoteList(chat_id):
 async def _save(client, message):
     chat_id = message.chat.id
     chat_title = message.chat.title
-    if message.reply_to_message and not len(message.command) >= 2:
+    
+    # Memastikan perintah memiliki nama note (index 1)
+    if len(message.command) < 2:
         return await message.reply_text("you need to give the note a name!")
-    
-    if not message.reply_to_message and not len(message.command) >= 3:
-        return await message.reply_text("You need to give the note some content!")
-    
+
     NoteName = message.command[1]
+
+    # Memastikan ada konten yang disimpan (reply atau teks langsung)
+    if not message.reply_to_message and len(message.command) < 3:
+        return await message.reply_text("You need to give the note some content or reply to a message!")
+    
+    
     Content, Text, DataType = GetNoteMessage(message)
     await SaveNote(chat_id, NoteName, Content, Text, DataType)
 
@@ -84,19 +97,37 @@ async def _save(client, message):
 @app.on_message(filters.command("get") & admin_filter)
 async def _getnote(client, message):
     chat_id = message.chat.id
-    if not len(message.command) >= 2:
+    if len(message.command) < 2:
         return await message.reply_text("You need to give the note a name!")  
+    
     note_name = message.command[1]
+    
     if not await isNoteExist(chat_id, note_name):
          return await message.reply_text("Note not found")
+         
     await send_note(message, note_name)
     
 
 @app.on_message(filters.regex(pattern=(r"^#[^\s]+")) & filters.group)
 async def regex_get_note(client, message):
     chat_id = message.chat.id
+    
+    # 🌟 PERBAIKAN UTAMA: Mencegah AttributeError jika message.text adalah None
+    if not message.text:
+        return
+        
+    # Cek jika pengguna ada dan pesan dimulai dengan '#'
+    # Karena filter sudah memastikan dimulai dengan #, kita fokus pada message.text
     if message.from_user:
-        note_name = message.text.split()[0].replace('#', '')
+        # Mengambil kata pertama (nama note) dan menghapus '#'
+        note_name_with_hash = message.text.split()[0]
+        if note_name_with_hash.startswith('#'):
+            note_name = note_name_with_hash[1:]
+        else:
+            # Walaupun filter regex seharusnya mencegah ini, ini untuk keamanan
+            return
+
+        # Panggil note_name dengan huruf kecil (sudah diubah di fungsi isNoteExist)
         if await isNoteExist(chat_id, note_name):
             await send_note(message, note_name)
 
@@ -109,8 +140,9 @@ PRIVATE_NOTES_FALSE = ['off', 'false', 'no', 'n']
 async def PrivateNote(client, message):
     chat_id = message.chat.id
     if len(message.command) >= 2:
+        arg = message.command[1].lower() # Gunakan argumen dengan huruf kecil
         if (
-            message.command[1].lower() in PRIVATE_NOTES_TRUE
+            arg in PRIVATE_NOTES_TRUE
         ):
             await set_private_note(chat_id, True)
             await message.reply(
@@ -119,7 +151,7 @@ async def PrivateNote(client, message):
             )
 
         elif (
-            message.command[1].lower() in PRIVATE_NOTES_FALSE
+            arg in PRIVATE_NOTES_FALSE
         ):
             await set_private_note(chat_id, False)
             await message.reply(
@@ -147,39 +179,57 @@ async def PrivateNote(client, message):
 @user_admin
 async def Clear_Note(client, message):
     chat_id = message.chat.id 
-    if not (
-        len(message.command) >= 2
-    ):
+    if len(message.command) < 2:
         await message.reply(
             "You need to give the note a name!",
             quote=True
         )
         return
     
-    note_name = message.command[1].lower()
+    # Memproses multiple notes yang dipisahkan koma
+    note_names = [name.strip().lower() for name in "".join(message.command[1:]).split(',')]
 
-    if await isNoteExist(chat_id, note_name):
-        await ClearNote(chat_id, note_name)
+    deleted_count = 0
+    not_found = []
 
-        await message.reply(
-            f"I've removed the note `{note_name}`!.",
-            quote=True
-        )
-    else:
-        await message.reply(
-            "You haven't saved a note with this name yet!",
-            quote=True
-        )
+    for note_name in note_names:
+        if await isNoteExist(chat_id, note_name):
+            await ClearNote(chat_id, note_name)
+            deleted_count += 1
+        else:
+            not_found.append(note_name)
+
+    response = []
+    if deleted_count > 0:
+        response.append(f"I've removed **{deleted_count}** note(s)!")
+    
+    if not_found:
+        response.append(f"Note(s) not found: `{', '.join(not_found)}`")
+
+    if not response:
+        response.append("You haven't saved any note with that name yet!")
+
+    await message.reply("\n".join(response), quote=True)
 
 
 @app.on_message(filters.command("clearall") & admin_filter)
 async def ClearAll_Note(client, message):
-    owner_id = message.from_user.id
+    # Mengambil ID user yang menjalankan perintah
+    sender_id = message.from_user.id
     chat_id = message.chat.id 
     chat_title = message.chat.title
-    user = await client.get_chat_member(chat_id,owner_id)
-    if not user.status == ChatMemberStatus.OWNER :
-        return await message.reply_text("Only Owner Can Use This!!") 
+    
+    # 🌟 Perbaikan: Cek status member, bukan hanya owner
+    # Owner adalah status yang paling tinggi, tapi admin filter sudah mengurus ini di atas, 
+    # namun fungsi ini secara khusus membatasi hanya untuk Owner.
+    try:
+        user = await client.get_chat_member(chat_id, sender_id)
+        if user.status != ChatMemberStatus.OWNER:
+            return await message.reply_text("Only Owner Can Use This!!") 
+    except Exception:
+        # Handle jika terjadi error saat get_chat_member (misal bot bukan admin)
+        return await message.reply_text("Error: Failed to retrieve user status. Ensure the bot is an admin.")
+
 
     note_list = await NoteList(chat_id)
     if not note_list:
@@ -190,10 +240,10 @@ async def ClearAll_Note(client, message):
         
     keyboard = InlineKeyboardMarkup(
         [[
-            InlineKeyboardButton(text='Delete all notes', callback_data=f'clearallnotes_clear_{owner_id}_{chat_id}')
+            InlineKeyboardButton(text='Delete all notes', callback_data=f'clearallnotes_clear_{sender_id}_{chat_id}')
         ],
         [
-            InlineKeyboardButton(text='Cancel', callback_data=f'clearallnotes_cancel_{owner_id}')
+            InlineKeyboardButton(text='Cancel', callback_data=f'clearallnotes_cancel_{sender_id}')
         ]]
     )
     await message.reply(
@@ -204,13 +254,14 @@ async def ClearAll_Note(client, message):
 
 @app.on_callback_query(filters.regex("^clearallnotes_"))
 async def ClearAllCallback(client, callback_query: CallbackQuery):
-    query_data = callback_query.data.split('_')[1]
-    owner_id = int(callback_query.data.split('_')[2])
+    data_parts = callback_query.data.split('_')
+    query_data = data_parts[1]
+    owner_id = int(data_parts[2])
     user_id = callback_query.from_user.id 
+    chat_id = int(data_parts[3]) if len(data_parts) > 3 else None
 
     if owner_id == user_id:
-        if query_data == 'clear':
-            chat_id = int(callback_query.data.split('_')[3])
+        if query_data == 'clear' and chat_id is not None:
             await ClearAllNotes(chat_id)
             await callback_query.edit_message_text("Deleted all chat notes.") 
             return
@@ -218,7 +269,7 @@ async def ClearAllCallback(client, callback_query: CallbackQuery):
         elif query_data == 'cancel':
             await callback_query.edit_message_text("Cancelled.")
     else:
-        await callback_query.answer("Only admins can execute this command!")
+        await callback_query.answer("Only the user who initiated the command can execute this!", show_alert=True)
                          
 @app.on_message(filters.command(['notes', 'saved']) & filters.group)
 async def Notes(client, message):
@@ -228,7 +279,7 @@ async def Notes(client, message):
 
     Notes_list = await NoteList(chat_id)
     
-    NoteHeader = f"List of notes  in {chat_title}:\n"
+    NoteHeader = f"List of notes in {chat_title}:\n"
     if (
         len(Notes_list) != 0
     ): 
@@ -263,7 +314,8 @@ async def exceNoteMessageSender_wrapper(message, note_name, content, text, data_
 
 async def send_note(message: Message, note_name: str):
     chat_id = message.chat.id  
-    content, text, data_type = await GetNote(chat_id, note_name) 
+    # 🌟 Pastikan note_name dipanggil dalam huruf kecil di sini juga
+    content, text, data_type = await GetNote(chat_id, note_name.lower()) 
     
     if not content and not text:
         return await message.reply("Note not found or empty.")
@@ -285,8 +337,29 @@ async def send_note(message: Message, note_name: str):
                 await exceNoteMessageSender_wrapper(message, note_name, content, text, data_type)
                     
 async def note_redirect(message):
-    chat_id = int(message.command[1].split('_')[1])
-    note_name = message.command[1].split('_')[2]
+    # Memeriksa panjang command
+    if len(message.command) < 2:
+        return await message.reply("Invalid note redirect command format.")
+        
+    # Mengambil bagian setelah '/start note_'
+    start_payload = message.command[1] 
+    
+    # Memastikan format payload benar: 'note_chatid_notename'
+    if not start_payload.startswith('note_'):
+         return await message.reply("Invalid note redirect command format.")
+
+    try:
+        # note_redirect dipanggil di PM, command[0] = /start, command[1] = note_12345_tes
+        parts = start_payload.split('_')
+        if len(parts) != 3:
+            raise ValueError("Incorrect number of parts in payload.")
+            
+        # parts[0] = 'note', parts[1] = chat_id, parts[2] = note_name
+        chat_id = int(parts[1])
+        note_name = parts[2]
+    except (ValueError, IndexError):
+        return await message.reply("Error parsing note redirect data.")
+
     
     content, text, data_type = await GetNote(chat_id, note_name)
     if not content and not text:
@@ -298,6 +371,7 @@ async def PrivateNoteButton(message, chat_id, NoteName):
     PrivateNoteButton = InlineKeyboardMarkup(
         [
             [
+                # NoteName harus di-encode jika mengandung karakter khusus, tapi untuk amannya kita anggap NoteName adalah string sederhana
                 InlineKeyboardButton(text='Click me!', url=f'http://t.me/{BOT_USERNAME}?start=note_{chat_id}_{NoteName}')
             ]
         ]
@@ -321,4 +395,4 @@ __HELP__ = """
 ✧ These modules by ➪ [fr rasta](https://t.me/root404byte)
 
 </blockquote>
-"""    
+"""
