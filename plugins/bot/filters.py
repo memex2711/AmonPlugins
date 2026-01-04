@@ -1,179 +1,166 @@
 import re
-from AmonMusic import app
-from AmonMusic.database import dB 
-from config import BOT_USERNAME
-from AmonMusic.utils.admin_filters import admin_filter
-from AmonMusic.utils.filters_func import GetFIlterMessage, get_text_reason, SendFilterMessage
-from AmonMusic.utils.permissions import user_admin
+import json
 from pyrogram import filters
 from pyrogram.enums import ChatMemberStatus
 from pyrogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 
-# --- DATABASE FUNCTIONS ---
+from AmonMusic import app
+from AmonMusic.database import dB 
+from AmonMusic.utils.admin_filters import admin_filter
+from AmonMusic.utils.filters_func import GetFIlterMessage, get_text_reason, SendFilterMessage
+from AmonMusic.utils.permissions import user_admin
 
-async def add_filter_db(chat_id, filter_name, content, text, data_type):
-    # Gunakan .lower() agar pencarian tidak sensitif huruf besar/kecil
-    value = {
-        "content": content,
-        "text": text,
-        "data_type": data_type
-    }
-    await dB.set_var(chat_id, filter_name.lower(), value, "FILTER")
-
-async def get_filters_list(chat_id):
-    all_filters = await dB.all_var(chat_id, "FILTER")
-    if not all_filters:
-        return []
-    return list(all_filters.keys())
-
-async def get_filter(chat_id, filter_name):
-    data = await dB.get_var(chat_id, filter_name.lower(), "FILTER")
-    if data and isinstance(data, dict):
-        return (
-            filter_name, 
-            data.get("content"), 
-            data.get("text"), 
-            data.get("data_type")
-        )
-    return (None, None, None, None)
-
-async def stop_all_db(chat_id):
-    all_filters = await dB.all_var(chat_id, "FILTER")
-    if all_filters:
-        for filter_name in all_filters.keys():
-            await dB.remove_var(chat_id, filter_name, "FILTER")
-
-async def stop_db(chat_id, filter_name):
-    await dB.remove_var(chat_id, filter_name.lower(), "FILTER")
+# Kategori di tabel variabel
+TAG = "FILTER"
 
 # --- HANDLERS ---
 
 @app.on_message(filters.command("filter") & admin_filter & filters.group)
 @user_admin
-async def _filter(client, message):
+async def add_new_filter(client, message):
     chat_id = message.chat.id 
     
-    # Validasi input
     if len(message.command) < 2:
-        return await message.reply("❌ **Format Salah.**\nGunakannya: `/filter [nama] [balasan]` atau reply ke pesan.")
-    
-    # Ambil nama filter dan cek apakah ada konten
+        return await message.reply("❌ **Gagal!** Berikan nama filternya.\nContoh: `/filter halo halo juga` atau reply ke media.")
+
+    # Ambil nama filter (lowercase)
     filter_name, _ = get_text_reason(message)
+    if not filter_name:
+        return await message.reply("❌ Nama filter tidak valid.")
+    
+    name = filter_name.lower().strip()
+    
+    # Ambil konten (teks/media) dari filter_func
     content, text, data_type = await GetFIlterMessage(message)
     
-    if not content and not text:
-        return await message.reply("❌ **Error:** Saya tidak bisa menemukan konten untuk disimpan.")
+    if not data_type:
+        return await message.reply("❌ Saya tidak bisa menemukan konten untuk disimpan. Pastikan Anda menyertakan teks atau membalas pesan media.")
 
-    await add_filter_db(chat_id, filter_name, content, text, data_type)
-    await message.reply(f"✅ Filter **`{filter_name}`** berhasil disimpan!")
+    # Format data
+    value = {
+        "content": content,
+        "text": text,
+        "data_type": data_type
+    }
+    
+    # Simpan ke Database (db_id, key, value, query_tag)
+    await dB.set_var(chat_id, name, value, TAG)
+    await message.reply(f"✅ Filter **`{name}`** berhasil disimpan!")
 
 
 @app.on_message(filters.group & ~filters.bot, group=1) 
-async def FilterCheckker(client, message):
-    # Ambil teks dari pesan atau caption (jika kirim gambar/file)
+async def check_filters_in_message(client, message):
+    # Support teks biasa maupun caption media
     text = message.text or message.caption
     if not text or text.startswith(("/", "!", ".")):
         return
 
     chat_id = message.chat.id
-    ALL_FILTERS = await get_filters_list(chat_id)
     
-    if not ALL_FILTERS:
+    # Ambil semua filter untuk grup ini (Hanya 1x panggil DB)
+    all_filters = await dB.all_var(chat_id, TAG)
+    if not all_filters:
         return
 
-    for name in ALL_FILTERS:
-        # Regex \b memastikan kata kunci berdiri sendiri (bukan bagian dari kata lain)
-        # Contoh: filter 'halo' tidak akan terpicu oleh kata 'haloha'
-        pattern = rf"\b{re.escape(name)}\b"
-        
-        if re.search(pattern, text, flags=re.IGNORECASE):
-            _, content, f_text, data_type = await get_filter(chat_id, name)
-            
-            if not content and not f_text:
+    # Cari apakah ada keyword di dalam pesan
+    for name, data in all_filters.items():
+        # Karena sqlite aiosqlite kadang mengembalikan string, kita pastikan jadi dict
+        if isinstance(data, str):
+            try:
+                data = json.loads(data)
+            except:
                 continue
-
+        
+        # Gunakan regex untuk mencocokkan kata (Case Insensitive)
+        pattern = re.compile(rf"\b{re.escape(str(name))}\b", flags=re.IGNORECASE)
+        
+        if pattern.search(text):
             await SendFilterMessage(
                 message=message,
                 filter_name=name,
-                content=content,
-                text=f_text,
-                data_type=data_type
+                content=data.get("content"),
+                text=data.get("text"),
+                data_type=data.get("data_type")
             )
-            break # Hentikan agar tidak memicu filter lain dalam satu pesan
+            return # Keluar setelah satu filter terpicu
 
 
 @app.on_message(filters.command('filters') & filters.group)
-async def _filters(client, message):
+async def list_active_filters(client, message):
     chat_id = message.chat.id
-    chat_title = message.chat.title 
+    all_f = await dB.all_var(chat_id, TAG)
     
-    FILTERS = await get_filters_list(chat_id)
-    if not FILTERS:
-        return await message.reply(f"❌ Tidak ada filter aktif di **{chat_title}**.")
+    if not all_f:
+        return await message.reply(f"❌ Tidak ada filter aktif di **{message.chat.title}**.")
 
-    filters_list = f"📂 **Filter Aktif di {chat_title}:**\n"
-    for filter_ in sorted(FILTERS):
-        filters_list += f"• `{filter_}`\n"
+    out = f"📂 **Daftar Filter - {message.chat.title}:**\n\n"
+    for name in sorted(all_f.keys()):
+        out += f"• `{name}`\n"
     
-    await message.reply(filters_list)
+    await message.reply(out)
 
 
 @app.on_message(filters.command('stopfilter') & admin_filter & filters.group)
 @user_admin
-async def stop(client, message):
+async def delete_filter(client, message):
     if len(message.command) < 2:
         return await message.reply("❌ Gunakan: `/stopfilter [nama_filter]`")
     
     chat_id = message.chat.id
-    filter_name = message.command[1].lower()
+    name = message.command[1].lower().strip()
     
-    if filter_name not in await get_filters_list(chat_id):
-        return await message.reply("❌ Filter tersebut tidak ditemukan.")
+    all_f = await dB.all_var(chat_id, TAG)
+    if not all_f or name not in all_f:
+        return await message.reply(f"❌ Filter `{name}` tidak ditemukan.")
     
-    await stop_db(chat_id, filter_name)
-    await message.reply(f"🗑️ Filter `{filter_name}` telah dihapus.")
+    await dB.remove_var(chat_id, name, TAG)
+    await message.reply(f"🗑️ Filter `{name}` telah dihapus.")
 
 
 @app.on_message(filters.command('stopall') & admin_filter & filters.group)
-async def stopall(client, message):
+async def confirm_stop_all(client, message):
     chat_id = message.chat.id
+    # Proteksi: Hanya Owner grup yang bisa stopall
     user = await client.get_chat_member(chat_id, message.from_user.id)
-    
     if user.status != ChatMemberStatus.OWNER:
         return await message.reply("⚠️ Hanya **Pemilik Grup** yang bisa menghapus semua filter.") 
 
-    KEYBOARD = InlineKeyboardMarkup([
-        [InlineKeyboardButton('Hapus Semua', callback_data='custfilters_stopall')],
-        [InlineKeyboardButton('Batal', callback_data='custfilters_cancel')]
+    kb = InlineKeyboardMarkup([
+        [InlineKeyboardButton('✅ Ya, Hapus Semua', callback_data='sf_stopall')],
+        [InlineKeyboardButton('❌ Batal', callback_data='sf_cancel')]
     ])
 
     await message.reply(
-        f"⚠️ **Konfirmasi:** Apakah Anda yakin ingin menghapus **SEMUA** filter di {message.chat.title}?",
-        reply_markup=KEYBOARD
+        f"❓ Apakah Anda yakin ingin menghapus **SEMUA** filter di {message.chat.title}?",
+        reply_markup=kb
     )
 
 
-@app.on_callback_query(filters.regex("^custfilters_"))
-async def stopall_callback(client, callback_query: CallbackQuery):  
-    chat_id = callback_query.message.chat.id 
-    data = callback_query.data.split('_')[1]  
-    user = await client.get_chat_member(chat_id, callback_query.from_user.id)
-
-    if user.status != ChatMemberStatus.OWNER:
-        return await callback_query.answer("Hanya pemilik grup yang bisa menekan tombol ini!", show_alert=True) 
+@app.on_callback_query(filters.regex("^sf_"))
+async def stopall_callback_handler(client, cb: CallbackQuery):  
+    chat_id = cb.message.chat.id 
+    cmd = cb.data.split('_')[1]  
     
-    if data == 'stopall':
-        await stop_all_db(chat_id)
-        await callback_query.edit_message_text("✅ Semua filter chat telah dibersihkan.")
-    elif data == 'cancel':
-        await callback_query.edit_message_text("❌ Aksi dibatalkan.")
+    # Cek lagi status owner
+    user = await client.get_chat_member(chat_id, cb.from_user.id)
+    if user.status != ChatMemberStatus.OWNER:
+        return await cb.answer("Anda bukan pemilik grup!", show_alert=True) 
+    
+    if cmd == 'stopall':
+        all_f = await dB.all_var(chat_id, TAG)
+        if all_f:
+            for name in all_f.keys():
+                await dB.remove_var(chat_id, name, TAG)
+        await cb.edit_message_text("✅ Semua filter chat berhasil dibersihkan!")
+    else:
+        await cb.edit_message_text("❌ Aksi penghapusan dibatalkan.")
 
 __MODULE__ = "Filters"
 __HELP__ = """
 📬 **Fitur Filter**
 
-• `/filter [keyword]` - Simpan filter (balas ke pesan/media).
-• `/filters` - Lihat daftar filter aktif.
+• `/filter [keyword]` - Simpan filter (balas ke pesan/media atau tulis teks setelah keyword).
+• `/filters` - Lihat daftar filter aktif di grup.
 • `/stopfilter [keyword]` - Hapus filter tertentu.
 • `/stopall` - Hapus semua filter (Hanya Owner).
 """
