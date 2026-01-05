@@ -46,7 +46,6 @@ async def NoteList(chat_id):
     all_notes = await dB.all_var(chat_id, TAG)
     if not all_notes or not isinstance(all_notes, dict):
         return []
-    # Filter agar status private notes tidak ikut muncul di daftar nama note
     return [name for name in all_notes.keys() if name != PRIVATE_NOTE_KEY]
 
 # --- COMMAND HANDLERS ---
@@ -61,24 +60,27 @@ async def _save(client, message):
 
     note_name = message.command[1].lower().strip()
     
-    # 1. Ambil Konten (Reply vs Teks Manual)
+    # PERBAIKAN: Ambil teks manual dengan aman (args[2] jika ada)
+    args = message.text.split(None, 2) if message.text else message.caption.split(None, 2)
+    manual_text = args[2] if len(args) >= 3 else None
+
+    # 1. Logika Pengambilan Konten
     if message.reply_to_message:
-        # Gunakan helper dari notes_func.py
+        # Ambil konten dari pesan yang di-reply
         content, text, data_type = GetNoteMessage(message.reply_to_message)
-        # Jika user mengetik teks setelah nama note, gunakan itu sebagai caption baru
-        manual_text = message.text.split(None, 2)[2] if len(message.command) > 2 else None
+        # Jika admin mengetik teks setelah nama note, gunakan itu sebagai caption baru
         if manual_text:
             text = manual_text
     else:
-        # Jika tidak reply, ambil teks manual sebagai isi note
-        if len(message.command) < 3:
+        # Jika tidak reply, teks manual wajib ada sebagai isi note
+        if not manual_text:
             return await message.reply_text("❌ Berikan isi teks atau reply ke media untuk menyimpan note.")
         content = None
-        text = message.text.split(None, 2)[2]
-        data_type = 1 # Type TEXT
+        text = manual_text
+        data_type = 1 # Type TEXT (NoteTypeMap.text.value)
 
     if not data_type:
-        return await message.reply_text("❌ Konten tidak didukung.")
+        return await message.reply_text("❌ Konten pesan tidak didukung atau kosong.")
 
     await SaveNote(chat_id, note_name, content, text, data_type)
     await message.reply_text(f"✅ Berhasil menyimpan catatan: `{note_name}`")
@@ -95,7 +97,7 @@ async def _getnote(client, message):
 async def regex_get_note(client, message):
     if not message.text:
         return
-    # Ambil nama note setelah tanda # dan ubah ke lowercase
+    # Ambil kata pertama, buang '#', ubah kecil
     note_name = message.text.split()[0][1:].lower()
     if await isNoteExist(message.chat.id, note_name):
         await send_note(message, note_name)
@@ -107,7 +109,7 @@ async def Clear_Note(client, message):
     if len(message.command) < 2:
         return await message.reply_text("❌ Berikan nama catatan yang ingin dihapus.")
     
-    # Support hapus banyak sekaligus: /clear note1, note2
+    # Ambil sisa teks setelah command
     raw_input = message.text.split(None, 1)[1]
     note_names = [n.strip().lower() for n in raw_input.split(',')]
 
@@ -174,11 +176,9 @@ async def send_note(message: Message, note_name: str):
     content, text, data_type = await GetNote(chat_id, note_name)
     
     if not data_type:
-        if message.text.startswith("/"):
-            await message.reply_text("❌ Catatan tidak ditemukan.")
         return
 
-    # Pengecekan status private (lokal dari isi teks vs global DB)
+    # Pengecekan izin & status private
     p_note, allow = await privateNote_and_admin_checker(message, text or "")
     if not allow: return
 
@@ -191,12 +191,10 @@ async def send_note(message: Message, note_name: str):
         ]])
         await message.reply_text(f"📩 Catatan `{note_name}` dikirim ke Private Chat.", reply_markup=kb)
     else:
-        # Panggil fungsi pengirim utama dari notes_func.py
         await SendNoteMessage(message, note_name, content, text, data_type, from_chat_id=None)
 
 @app.on_message(filters.command("start") & filters.private)
 async def start_pm_notes(client, message):
-    # Penanganan Redirect Catatan dari Tombol
     if len(message.command) > 1 and message.command[1].startswith("note_"):
         parts = message.command[1].split("_")
         if len(parts) == 3:
@@ -206,7 +204,7 @@ async def start_pm_notes(client, message):
             if data_type:
                 return await SendNoteMessage(message, note_name, content, text, data_type, from_chat_id=target_chat)
     
-    await message.reply_text("Halo! Saya adalah Bot Manajemen Grup Anda.")
+    await message.reply_text("Halo! Saya bot asisten grup Anda.")
 
 __MODULE__ = "Notes"
 __HELP__ = """
