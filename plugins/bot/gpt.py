@@ -90,7 +90,7 @@ async def process_query(client: Client, message: Message, tts: bool = False):
             os.remove(audio_file)
 
 
-@app.on_message(filters.command(["ii"], prefixes=["w", "W"]))
+@app.on_message(filters.command(["mon"], prefixes=["a", "A"]))
 async def jarvis_handler(client: Client, message: Message):
     try:
         await asyncio.wait_for(process_query(client, message), timeout=60)
