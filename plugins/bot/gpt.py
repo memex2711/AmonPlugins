@@ -1,4 +1,3 @@
-"""
 import asyncio
 import os
 import base64
@@ -228,4 +227,3 @@ async def geminivision_handler(client: Client, message: Message):
         await status.delete()
         await lexica_client.close()
         os.remove(file_path)
-"""
