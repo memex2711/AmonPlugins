@@ -159,11 +159,13 @@ async def stopall_callback_handler(client, cb: CallbackQuery):
 
 __MODULE__ = "Filters"
 __HELP__ = """
-📬 **Fitur Filter**
+<blockquote expandable>📬 **Fitur Filter**
 
 • `/filter [keyword] [pesan]` - Simpan filter teks.
 • `/filter [keyword]` (Reply media) - Simpan filter media.
 • `/filters` - Lihat daftar filter.
 • `/stopfilter [keyword]` - Hapus satu filter.
 • `/stopall` - Hapus semua filter (Owner Only).
+
+</blockquote>
 """
