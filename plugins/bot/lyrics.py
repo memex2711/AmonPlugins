@@ -6,7 +6,7 @@ from io import BytesIO
 from pyrogram import filters
 from pyrogram.types import Message
 
-from config import API_BOTCHAX
+from config import BOTCAHX_APIKEY
 from AmonMusic import app
 from AmonMusic.utils.decorators.language import language
 
@@ -37,7 +37,7 @@ async def lyrics_handler(client, message: Message, _):
     try:
         response = requests.get(
             "https://api.botcahx.eu.org/api/search/lirik",
-            params={"lirik": query, "apikey": API_BOTCHAX}
+            params={"lirik": query, "apikey": BOTCAHX_APIKEY}
         )
 
         if response.status_code != 200:
