@@ -65,7 +65,7 @@ Yang telah hadir, silakan klik tombol HADIR di bawah ini.**"""
     return await message.reply(absen_text, reply_markup=keyboard)
 
 
-@app.on_message(filters.command("refresh") & admin_filter & ~BANNED_USERS)
+@app.on_message(filters.command("refreshabsen") & admin_filter & ~BANNED_USERS)
 async def refresh_absen(_, message: Message): 
     now = datetime.now(pytz.timezone("Asia/Jakarta"))
     date_str = format_tanggal_indo(now)
